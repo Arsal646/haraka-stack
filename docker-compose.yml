@@ -1,0 +1,39 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  haraka:
+    build: ./haraka
+    container_name: haraka
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    ports:
+      - "25:25"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017
+      - MONGO_DB=tempmail
+      - MONGO_COLLECTION=emails
+
+  api:
+    build: ./api
+    container_name: tempmail-api
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    ports:
+      - "4000:4000"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017
+      - MONGO_DB=tempmail
+      - MONGO_COLLECTION=emails
+      - API_PORT=4000
+
+volumes:
+  mongo_data: {}

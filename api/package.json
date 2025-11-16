@@ -1,0 +1,13 @@
+{
+  "name": "tempmail-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "mongodb": "^6.10.0",
+    "mailparser": "^3.6.8"
+  }
+}
