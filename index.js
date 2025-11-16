@@ -21,7 +21,7 @@ async function initMongo() {
 
 // health check
 app.get("/health", (req, res) => {
-  res.json({ ok: true });
+  res.json({ ok: true, helo: "tempmail-mongo-api" });
 });
 
 // inbox list with parsed text and html
