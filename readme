@@ -1,3 +1,6 @@
+ssh ubuntu@51.79.254.189
+
+
 sudo rm -rf haraka-stack
 git clone https://github.com/Arsal646/haraka-stack.git
 cd haraka-stack
