@@ -64,13 +64,16 @@ app.get("/inbox/:address", async (req, res) => {
       }
 
       parsedDocs.push({
-        _id: doc._id,
-        mail_from: doc.mail_from,
-        rcpt_to: doc.rcpt_to,
+        id: doc._id.toString(),
+        from_email: doc.mail_from,
+        to_email: Array.isArray(doc.rcpt_to) ? doc.rcpt_to[0] : doc.rcpt_to,
         subject: doc.subject,
-        receivedAt: doc.receivedAt,
-        textBody,
-        htmlBody
+        body_text: textBody,
+        body_html: htmlBody,
+        bucket: null,
+        object_key: null,
+        created_at: doc.receivedAt,
+        updated_at: doc.receivedAt
       });
     }
 
@@ -105,13 +108,16 @@ app.get("/message/:id", async (req, res) => {
     }
 
     res.json({
-      _id: doc._id,
-      mail_from: doc.mail_from,
-      rcpt_to: doc.rcpt_to,
+      id: doc._id.toString(),
+      from_email: doc.mail_from,
+      to_email: Array.isArray(doc.rcpt_to) ? doc.rcpt_to[0] : doc.rcpt_to,
       subject: doc.subject,
-      receivedAt: doc.receivedAt,
-      textBody,
-      htmlBody
+      body_text: textBody,
+      body_html: htmlBody,
+      bucket: null,
+      object_key: null,
+      created_at: doc.receivedAt,
+      updated_at: doc.receivedAt
     });
   } catch (e) {
     console.error(e);
