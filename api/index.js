@@ -9,6 +9,8 @@ const MONGO_URI = process.env.MONGO_URL || "mongodb://mongo:27017";
 const DB_NAME = process.env.MONGO_DB || "tempmail";
 const COLLECTION = process.env.MONGO_COLLECTION || "emails";
 
+app.use(express.static("public"));
+
 let collection;
 
 // helper to parse YYYY-MM-DD into UTC start and end of that day
