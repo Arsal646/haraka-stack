@@ -1,6 +1,7 @@
 const express = require("express");
 const { MongoClient, ObjectId } = require("mongodb");
 const { simpleParser } = require("mailparser");
+const path = require("path");
 
 const app = express();
 
@@ -10,6 +11,26 @@ const DB_NAME = process.env.MONGO_DB || "tempmail";
 const COLLECTION = process.env.MONGO_COLLECTION || "emails";
 
 let collection;
+const dashboardPath = path.join(__dirname, "public", "dashboard.html");
+
+function startOfDay(date) {
+  const day = new Date(date);
+  day.setHours(0, 0, 0, 0);
+  return day;
+}
+
+function startOfWeek(date) {
+  const week = startOfDay(date);
+  const day = week.getDay();
+  week.setDate(week.getDate() - day);
+  return week;
+}
+
+function startOfMonth(date) {
+  const month = startOfDay(date);
+  month.setDate(1);
+  return month;
+}
 
 // connect to Mongo and start server
 async function start() {
@@ -122,5 +143,65 @@ app.get("/message/:id", async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+app.get("/dashboard", (req, res) => {
+  res.sendFile(dashboardPath);
+});
+
+app.get("/dashboard-data", async (req, res) => {
+  try {
+    const now = new Date();
+    const todayFilter = { receivedAt: { $gte: startOfDay(now) } };
+    const weekFilter = { receivedAt: { $gte: startOfWeek(now) } };
+    const monthFilter = { receivedAt: { $gte: startOfMonth(now) } };
+
+    const [todayCount, weekCount, monthCount] = await Promise.all([
+      collection.countDocuments(todayFilter),
+      collection.countDocuments(weekFilter),
+      collection.countDocuments(monthFilter)
+    ]);
+
+    let filteredCount = null;
+    let start = null;
+    let end = null;
+    const rangeFilter = {};
+
+    if (req.query.startDate) {
+      start = new Date(req.query.startDate);
+      if (Number.isNaN(start.getTime())) {
+        return res.status(400).json({ ok: false, error: "Invalid startDate" });
+      }
+      start = startOfDay(start);
+      rangeFilter.$gte = start;
+    }
+
+    if (req.query.endDate) {
+      end = new Date(req.query.endDate);
+      if (Number.isNaN(end.getTime())) {
+        return res.status(400).json({ ok: false, error: "Invalid endDate" });
+      }
+      end.setHours(23, 59, 59, 999);
+      rangeFilter.$lte = end;
+    }
+
+    if (Object.keys(rangeFilter).length) {
+      filteredCount = await collection.countDocuments({ receivedAt: rangeFilter });
+    }
+
+    res.json({
+      today: todayCount,
+      week: weekCount,
+      month: monthCount,
+      filtered: filteredCount,
+      filter: {
+        start: start ? start.toISOString().split("T")[0] : null,
+        end: end ? end.toISOString().split("T")[0] : null
+      }
+    });
+  } catch (err) {
+    console.error("Dashboard data error", err);
+    res.status(500).json({ ok: false, error: err.message });
   }
 });

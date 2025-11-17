@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Inbox Dashboard</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #eef2f6;
+        color: #0f172a;
+        display: flex;
+        justify-content: center;
+      }
+      main {
+        width: min(960px, 100%);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 1.4rem;
+        font-weight: 600;
+      }
+      header p {
+        margin: 0.25rem 0 0;
+        color: #475569;
+        font-size: 0.95rem;
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+      }
+      .card {
+        padding: 1rem;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+      .card span {
+        font-size: 0.8rem;
+        color: #64748b;
+      }
+      .count {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .filter-panel,
+      .filter-summary {
+        background: #fff;
+        border-radius: 14px;
+        padding: 1rem;
+        box-shadow: 0 15px 35px rgba(15, 23, 42, 0.06);
+      }
+      label {
+        font-size: 0.85rem;
+        color: #475569;
+        margin-bottom: 0.25rem;
+        display: block;
+      }
+      input[type="date"] {
+        width: 100%;
+        padding: 0.65rem;
+        border-radius: 10px;
+        border: 1px solid #cbd5f5;
+        background: #f8fafc;
+        font-size: 1rem;
+      }
+      .actions {
+        margin-top: 0.8rem;
+        display: flex;
+        gap: 0.5rem;
+      }
+      button {
+        border: none;
+        border-radius: 10px;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .primary {
+        background: #0f766e;
+        color: #fff;
+      }
+      .secondary {
+        background: #e2e8f0;
+        color: #0f172a;
+      }
+      .status-tag {
+        font-size: 0.9rem;
+        padding: 0.6rem 0.8rem;
+        border-radius: 999px;
+        background: #f1f5f9;
+        color: #334155;
+        align-self: flex-start;
+      }
+      @media (min-width: 640px) {
+        header h1 {
+          font-size: 1.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Inbox Analytics</h1>
+        <p>Mobile-first dashboard of incoming email counts.</p>
+      </header>
+      <section class="stats-grid">
+        <article class="card">
+          <span>Received Today</span>
+          <div class="count" id="today-count">···</div>
+        </article>
+        <article class="card">
+          <span>Last 7 days</span>
+          <div class="count" id="week-count">···</div>
+        </article>
+        <article class="card">
+          <span>This month</span>
+          <div class="count" id="month-count">···</div>
+        </article>
+      </section>
+      <section class="filter-panel">
+        <p style="margin:0 0 0.6rem; font-weight:600;">Custom date range</p>
+        <form id="filter-form">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:0.75rem;">
+            <div>
+              <label for="start-date">Start date</label>
+              <input type="date" id="start-date" name="startDate" />
+            </div>
+            <div>
+              <label for="end-date">End date</label>
+              <input type="date" id="end-date" name="endDate" />
+            </div>
+          </div>
+          <div class="actions">
+            <button type="submit" class="primary">Apply filter</button>
+            <button type="button" class="secondary" id="clear-filters">Clear</button>
+          </div>
+        </form>
+      </section>
+      <section class="filter-summary" id="filtered-section" hidden>
+        <span style="font-size:0.85rem; color:#475569;">Filtered inbox count</span>
+        <div class="count" id="filtered-count">0</div>
+        <p id="filter-range" style="margin:0; color:#0f766e; font-weight:600;"></p>
+      </section>
+      <div class="status-tag" id="status-text">Waiting for data…</div>
+    </main>
+    <script>
+      (function () {
+        const todayEl = document.getElementById("today-count");
+        const weekEl = document.getElementById("week-count");
+        const monthEl = document.getElementById("month-count");
+        const filteredSection = document.getElementById("filtered-section");
+        const filteredEl = document.getElementById("filtered-count");
+        const filterRange = document.getElementById("filter-range");
+        const startInput = document.getElementById("start-date");
+        const endInput = document.getElementById("end-date");
+        const statusText = document.getElementById("status-text");
+
+        const setStatus = (text) => {
+          statusText.textContent = text;
+        };
+
+        async function refresh(start, end) {
+          setStatus("Loading stats…");
+          try {
+            const params = new URLSearchParams();
+            if (start) params.set("startDate", start);
+            if (end) params.set("endDate", end);
+            const queryString = params.toString() ? "?" + params.toString() : "";
+            const response = await fetch("/dashboard-data" + queryString);
+            if (!response.ok) throw new Error("Unable to load stats");
+            const data = await response.json();
+            todayEl.textContent = data.today ?? "0";
+            weekEl.textContent = data.week ?? "0";
+            monthEl.textContent = data.month ?? "0";
+
+            if (data.filtered !== null) {
+              filteredSection.hidden = false;
+              filteredEl.textContent = data.filtered;
+              const startLabel = data.filter.start || "Start";
+              const endLabel = data.filter.end || "Now";
+              filterRange.textContent = startLabel + " → " + endLabel;
+            } else {
+              filteredSection.hidden = true;
+              filterRange.textContent = "";
+            }
+
+            setStatus("Updated " + new Date().toLocaleTimeString());
+          } catch (err) {
+            console.error(err);
+            setStatus(err.message || "Unable to load stats");
+          }
+        }
+
+        document.getElementById("filter-form").addEventListener("submit", function (event) {
+          event.preventDefault();
+          refresh(startInput.value, endInput.value);
+        });
+
+        document.getElementById("clear-filters").addEventListener("click", function () {
+          startInput.value = "";
+          endInput.value = "";
+          refresh("", "");
+        });
+
+        refresh();
+      })();
+    </script>
+  </body>
+</html>
