@@ -15,5 +15,6 @@ You can also open the lightweight analytics dashboard to see today/week/month co
 http://51.79.254.189/dashboard
 
 
+git pull
 sudo docker-compose down
 sudo docker-compose up -d --build
