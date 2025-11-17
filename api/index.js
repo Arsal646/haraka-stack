@@ -13,22 +13,28 @@ const COLLECTION = process.env.MONGO_COLLECTION || "emails";
 let collection;
 const dashboardPath = path.join(__dirname, "public", "dashboard.html");
 
-function startOfDay(date) {
+function utcStartOfDay(date) {
   const day = new Date(date);
-  day.setHours(0, 0, 0, 0);
+  day.setUTCHours(0, 0, 0, 0);
   return day;
 }
 
-function startOfWeek(date) {
-  const week = startOfDay(date);
-  const day = week.getDay();
-  week.setDate(week.getDate() - day);
+function utcEndOfDay(date) {
+  const end = utcStartOfDay(date);
+  end.setUTCHours(23, 59, 59, 999);
+  return end;
+}
+
+function utcStartOfWeek(date) {
+  const week = utcStartOfDay(date);
+  const day = week.getUTCDay();
+  week.setUTCDate(week.getUTCDate() - day);
   return week;
 }
 
-function startOfMonth(date) {
-  const month = startOfDay(date);
-  month.setDate(1);
+function utcStartOfMonth(date) {
+  const month = utcStartOfDay(date);
+  month.setUTCDate(1);
   return month;
 }
 
@@ -153,9 +159,9 @@ app.get("/dashboard", (req, res) => {
 app.get("/dashboard-data", async (req, res) => {
   try {
     const now = new Date();
-    const todayFilter = { receivedAt: { $gte: startOfDay(now) } };
-    const weekFilter = { receivedAt: { $gte: startOfWeek(now) } };
-    const monthFilter = { receivedAt: { $gte: startOfMonth(now) } };
+    const todayFilter = { receivedAt: { $gte: utcStartOfDay(now) } };
+    const weekFilter = { receivedAt: { $gte: utcStartOfWeek(now) } };
+    const monthFilter = { receivedAt: { $gte: utcStartOfMonth(now) } };
 
     const [todayCount, weekCount, monthCount] = await Promise.all([
       collection.countDocuments(todayFilter),
@@ -173,7 +179,7 @@ app.get("/dashboard-data", async (req, res) => {
       if (Number.isNaN(start.getTime())) {
         return res.status(400).json({ ok: false, error: "Invalid startDate" });
       }
-      start = startOfDay(start);
+      start = utcStartOfDay(start);
       rangeFilter.$gte = start;
     }
 
@@ -182,7 +188,7 @@ app.get("/dashboard-data", async (req, res) => {
       if (Number.isNaN(end.getTime())) {
         return res.status(400).json({ ok: false, error: "Invalid endDate" });
       }
-      end.setHours(23, 59, 59, 999);
+      end = utcEndOfDay(end);
       rangeFilter.$lte = end;
     }
 
