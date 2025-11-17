@@ -154,6 +154,31 @@
   </div>
 
   <script>
+    // Always use Abu Dhabi, Dubai time zone
+    function abuDhabiNow() {
+      const now = new Date();
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Dubai",
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric"
+      }).formatToParts(now);
+
+      const get = (type) => parseInt(parts.find((p) => p.type === type).value, 10);
+
+      return new Date(
+        get("year"),
+        get("month") - 1,
+        get("day"),
+        get("hour"),
+        get("minute"),
+        get("second")
+      );
+    }
+
     const chipsContainer = document.getElementById("range-chips");
     const countValueEl = document.getElementById("count-value");
     const statusTextEl = document.getElementById("status-text");
@@ -177,7 +202,7 @@
     }
 
     function updateChipLabels() {
-      const now = new Date();
+      const now = abuDhabiNow();
       const yesterday = new Date(now);
       yesterday.setDate(yesterday.getDate() - 1);
 
@@ -200,7 +225,7 @@
     updateChipLabels();
 
     function getDatesForRange(range) {
-      const today = new Date();
+      const today = abuDhabiNow();
       today.setHours(0, 0, 0, 0);
 
       if (range === "today") return [formatDate(today)];
