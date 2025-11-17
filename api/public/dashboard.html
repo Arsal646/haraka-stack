@@ -122,16 +122,6 @@
     .status.loading {
       color: #2563eb;
     }
-
-    @media (min-width: 600px) {
-      body {
-        padding-top: 32px;
-      }
-
-      .title {
-        font-size: 22px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -144,10 +134,10 @@
     </header>
 
     <div class="chip-row" id="range-chips">
-      <button class="chip active" data-range="today">Today</button>
-      <button class="chip" data-range="yesterday">Yesterday</button>
-      <button class="chip" data-range="week">Week</button>
-      <button class="chip" data-range="month">Month</button>
+      <button class="chip active" data-range="today" id="chip-today">Today</button>
+      <button class="chip" data-range="yesterday" id="chip-yesterday">Yesterday</button>
+      <button class="chip" data-range="week" id="chip-week">Week</button>
+      <button class="chip" data-range="month" id="chip-month">Month</button>
     </div>
 
     <section class="card">
@@ -164,24 +154,52 @@
   </div>
 
   <script>
-    const API_BASE = ""; // same origin. Example: "" so it calls /email-count
-
     const chipsContainer = document.getElementById("range-chips");
     const countValueEl = document.getElementById("count-value");
     const statusTextEl = document.getElementById("status-text");
     const rangeLabelEl = document.getElementById("range-label");
 
+    const chipToday = document.getElementById("chip-today");
+    const chipYesterday = document.getElementById("chip-yesterday");
+    const chipWeek = document.getElementById("chip-week");
+    const chipMonth = document.getElementById("chip-month");
+
+    function formatShort(date) {
+      return date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+    }
+
     function formatDate(date) {
       return date.toISOString().split("T")[0];
     }
+
+    function updateChipLabels() {
+      const now = new Date();
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      chipToday.textContent = "Today (" + formatShort(now) + ")";
+      chipYesterday.textContent = "Yesterday (" + formatShort(yesterday) + ")";
+
+      const weekEnd = formatShort(now);
+      const weekStart = new Date(now);
+      weekStart.setDate(weekStart.getDate() - 6);
+
+      chipWeek.textContent = "Week (" + formatShort(weekStart) + " - " + weekEnd + ")";
+
+      const monthEnd = formatShort(now);
+      const monthStart = new Date(now);
+      monthStart.setDate(monthStart.getDate() - 29);
+
+      chipMonth.textContent = "Month (" + formatShort(monthStart) + " - " + monthEnd + ")";
+    }
+
+    updateChipLabels();
 
     function getDatesForRange(range) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      if (range === "today") {
-        return [formatDate(today)];
-      }
+      if (range === "today") return [formatDate(today)];
 
       if (range === "yesterday") {
         const y = new Date(today);
@@ -190,7 +208,6 @@
       }
 
       if (range === "week") {
-        // last 7 days including today
         const dates = [];
         for (let i = 0; i < 7; i++) {
           const d = new Date(today);
@@ -201,7 +218,6 @@
       }
 
       if (range === "month") {
-        // last 30 days including today
         const dates = [];
         for (let i = 0; i < 30; i++) {
           const d = new Date(today);
@@ -222,17 +238,10 @@
       return "Today";
     }
 
-    async function fetchCountForDate(dateStr) {
-      const url = `${API_BASE}/email-count?date=${encodeURIComponent(dateStr)}`;
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error(`API error, status ${res.status}`);
-      }
+    async function fetchCountForDate(str) {
+      const res = await fetch("/email-count?date=" + str);
       const data = await res.json();
-      if (!data.ok) {
-        throw new Error(data.error || "API returned error");
-      }
-      return typeof data.count === "number" ? data.count : 0;
+      return data.count || 0;
     }
 
     async function loadRange(range) {
@@ -245,49 +254,34 @@
         let total = 0;
 
         for (const d of dates) {
-          const c = await fetchCountForDate(d);
-          total += c;
+          total += await fetchCountForDate(d);
         }
 
-        countValueEl.textContent = total.toString();
-        const now = new Date();
-        setStatus("Updated at " + now.toLocaleTimeString(), "normal");
+        countValueEl.textContent = total;
+        setStatus("Updated just now", "normal");
       } catch (err) {
-        console.error(err);
-        setStatus("Error, " + err.message, "error");
+        setStatus("Error: " + err.message, "error");
       }
     }
 
     function setActiveChip(range) {
       const chips = chipsContainer.querySelectorAll(".chip");
       chips.forEach((chip) => {
-        if (chip.dataset.range === range) {
-          chip.classList.add("active");
-        } else {
-          chip.classList.remove("active");
-        }
+        chip.classList.toggle("active", chip.dataset.range === range);
       });
     }
 
     function setStatus(text, type) {
       statusTextEl.textContent = text;
-      statusTextEl.classList.remove("error", "loading");
-      if (type === "error") {
-        statusTextEl.classList.add("error");
-      } else if (type === "loading") {
-        statusTextEl.classList.add("loading");
-      }
+      statusTextEl.className = "status " + type;
     }
 
-    chipsContainer.addEventListener("click", (event) => {
-      const button = event.target.closest(".chip");
-      if (!button) return;
-      const range = button.dataset.range;
-      if (!range) return;
-      loadRange(range);
+    chipsContainer.addEventListener("click", (e) => {
+      const btn = e.target.closest(".chip");
+      if (!btn) return;
+      loadRange(btn.dataset.range);
     });
 
-    // initial load
     loadRange("today");
   </script>
 </body>
