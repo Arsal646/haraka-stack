@@ -6,6 +6,10 @@ git clone https://github.com/Arsal646/haraka-stack.git
 cd haraka-stack
 sudo docker-compose up -d --build
 
+Once the stack is running you can hit the API through the nginx proxy on port 80 (no port suffix), e.g.
+
+http://51.79.254.189/inbox/test8@nubix.store
+
 
 sudo docker-compose down
 sudo docker-compose up -d --build

@@ -7,6 +7,8 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    networks:
+      - backend
 
   haraka:
     build: ./haraka
@@ -20,6 +22,8 @@ services:
       - MONGO_URL=mongodb://mongo:27017
       - MONGO_DB=tempmail
       - MONGO_COLLECTION=emails
+    networks:
+      - backend
 
   api:
     build: ./api
@@ -27,13 +31,28 @@ services:
     restart: unless-stopped
     depends_on:
       - mongo
-    ports:
-      - "4000:4000"
     environment:
       - MONGO_URL=mongodb://mongo:27017
       - MONGO_DB=tempmail
       - MONGO_COLLECTION=emails
       - API_PORT=4000
+    networks:
+      - backend
 
+  nginx:
+    image: nginx:alpine
+    container_name: tempmail-nginx
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - backend
 volumes:
   mongo_data: {}
+
+networks:
+  backend:
