@@ -51,6 +51,23 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - backend
+
+  manoo-express:
+    image: mongo-express:1.4.0
+    container_name: manoo-express
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ""
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ""
+      ME_CONFIG_OPTIONS_EDITORTHEME: "default"
+    networks:
+      - backend
 volumes:
   mongo_data: {}
 
