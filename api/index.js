@@ -159,24 +159,32 @@ app.get("/message/:id", async (req, res) => {
 // GET /email-count?date=2025-11-17
 app.get("/email-count", async (req, res) => {
   try {
-    const { date } = req.query;
-
-    if (!date) {
-      return res.status(400).json({
-        ok: false,
-        error: "Missing 'date' query param, use YYYY-MM-DD"
-      });
+    const dateStr = req.query.date; // "2025-11-18"
+    if (!dateStr) {
+      return res.status(400).json({ ok: false, error: "date is required" });
     }
 
-    const { start, end } = getUtcDayRange(date);
+    const [year, month, day] = dateStr.split("-").map(Number);
+
+    // Local Abu Dhabi day 2025 11 18 00:00
+    const localStartMs = Date.UTC(year, month - 1, day, 0, 0, 0);
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const offsetMs = 4 * 60 * 60 * 1000; // UTC+4
+
+    // Convert Abu Dhabi local start and end to UTC
+    const startUtc = new Date(localStartMs - offsetMs);
+    const endUtc = new Date(localStartMs + oneDayMs - offsetMs);
 
     const count = await collection.countDocuments({
-      receivedAt: { $gte: start, $lte: end }
+      receivedAt: {
+        $gte: startUtc,
+        $lt: endUtc
+      }
     });
 
-    res.json({ ok: true, date, count });
+    res.json({ ok: true, date: dateStr, count });
   } catch (err) {
-    console.error("Email count error", err.message);
-    res.status(400).json({ ok: false, error: err.message });
+    console.error(err);
+    res.status(500).json({ ok: false, error: "server error" });
   }
 });
