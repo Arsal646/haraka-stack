@@ -53,7 +53,7 @@ services:
       - backend
 
   manoo-express:
-    image: mongo-express:1.4.0
+    image: mongo-express:0.54
     container_name: manoo-express
     restart: unless-stopped
     depends_on:
