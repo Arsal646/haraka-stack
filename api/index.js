@@ -38,6 +38,40 @@ function utcStartOfMonth(date) {
   return month;
 }
 
+function parseIsoDate(value) {
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) {
+    throw new Error("Invalid date");
+  }
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+function parseDashboardRange(query = {}) {
+  const rangeFilter = {};
+  let start = null;
+  let end = null;
+
+  if (query.startDate) {
+    start = parseIsoDate(query.startDate);
+    if (Number.isNaN(start.getTime())) {
+      throw new Error("Invalid startDate");
+    }
+    start = utcStartOfDay(start);
+    rangeFilter.$gte = start;
+  }
+
+  if (query.endDate) {
+    end = new Date(query.endDate);
+    if (Number.isNaN(end.getTime())) {
+      throw new Error("Invalid endDate");
+    }
+    end = utcEndOfDay(end);
+    rangeFilter.$lte = end;
+  }
+
+  return { rangeFilter, start, end };
+}
+
 // connect to Mongo and start server
 async function start() {
   try {
@@ -172,29 +206,64 @@ app.get("/dashboard-data", async (req, res) => {
     let filteredCount = null;
     let start = null;
     let end = null;
-    const rangeFilter = {};
+    let rangeFilter = {};
 
-    if (req.query.startDate) {
-      start = new Date(req.query.startDate);
-      if (Number.isNaN(start.getTime())) {
-        return res.status(400).json({ ok: false, error: "Invalid startDate" });
-      }
-      start = utcStartOfDay(start);
-      rangeFilter.$gte = start;
-    }
-
-    if (req.query.endDate) {
-      end = new Date(req.query.endDate);
-      if (Number.isNaN(end.getTime())) {
-        return res.status(400).json({ ok: false, error: "Invalid endDate" });
-      }
-      end = utcEndOfDay(end);
-      rangeFilter.$lte = end;
+    try {
+      ({ rangeFilter, start, end } = parseDashboardRange(req.query));
+    } catch (err) {
+      return res.status(400).json({ ok: false, error: err.message });
     }
 
     if (Object.keys(rangeFilter).length) {
       filteredCount = await collection.countDocuments({ receivedAt: rangeFilter });
     }
+
+    const topDomainsPipeline = [
+      { $match: { mail_from: { $type: "string" } } },
+      {
+        $project: {
+          domain: {
+            $arrayElemAt: [
+              { $split: [{ $toLower: "$mail_from" }, "@"] },
+              -1
+            ]
+          }
+        }
+      },
+      { $match: { domain: { $nin: [null, ""] } } },
+      { $group: { _id: "$domain", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 6 },
+      { $project: { domain: "$_id", count: 1, _id: 0 } }
+    ];
+
+    const repeatedRecipientsPipeline = [
+      { $match: { rcpt_to: { $exists: true } } },
+      {
+        $project: {
+          recipients: {
+            $cond: [
+              { $isArray: "$rcpt_to" },
+              "$rcpt_to",
+              ["$rcpt_to"]
+            ]
+          }
+        }
+      },
+      { $unwind: "$recipients" },
+      { $group: { _id: "$recipients", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 6 },
+      { $project: { recipient: "$_id", count: 1, _id: 0 } }
+    ];
+
+    const [topDomains, repeatedRecipients] = await Promise.all([
+      collection.aggregate(topDomainsPipeline, { allowDiskUse: true }).toArray(),
+      collection.aggregate(
+        repeatedRecipientsPipeline,
+        { allowDiskUse: true }
+      ).toArray()
+    ]);
 
     res.json({
       today: todayCount,
@@ -204,10 +273,50 @@ app.get("/dashboard-data", async (req, res) => {
       filter: {
         start: start ? start.toISOString().split("T")[0] : null,
         end: end ? end.toISOString().split("T")[0] : null
-      }
+      },
+      topDomains,
+      repeatedRecipients
     });
   } catch (err) {
     console.error("Dashboard data error", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+app.get("/dashboard-emails", async (req, res) => {
+  try {
+    const { rangeFilter } = parseDashboardRange(req.query);
+    const filter = Object.keys(rangeFilter).length ? { receivedAt: rangeFilter } : {};
+
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const pageSize = Math.min(50, Math.max(5, parseInt(req.query.pageSize, 10) || 15));
+    const skip = (page - 1) * pageSize;
+
+    const total = await collection.countDocuments(filter);
+
+    const docs = await collection
+      .find(filter)
+      .sort({ receivedAt: -1 })
+      .skip(skip)
+      .limit(pageSize)
+      .toArray();
+
+    const response = {
+      total,
+      page,
+      pageSize,
+      emails: docs.map((doc) => ({
+        id: doc._id.toString(),
+        from_email: doc.mail_from,
+        to_email: Array.isArray(doc.rcpt_to) ? doc.rcpt_to[0] : doc.rcpt_to,
+        subject: doc.subject,
+        created_at: doc.receivedAt
+      }))
+    };
+
+    res.json(response);
+  } catch (err) {
+    console.error("Dashboard email error", err);
     res.status(500).json({ ok: false, error: err.message });
   }
 });

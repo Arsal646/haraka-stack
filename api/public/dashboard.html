@@ -1,406 +1,529 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex, nofollow">
-    <title>Email Dashboard</title>
-    <style>
-        :root {
-            color-scheme: light;
-            --bg: #f5f6f7;
-            --surface: #ffffff;
-            --surface-alt: #f9fafb;
-            --border: #d1d5db;
-            --text-strong: #111827;
-            --text-muted: #6b7280;
-            --accent: #111827;
-            --accent-light: rgba(17, 24, 39, 0.08);
-            --radius: 12px;
-            --radius-sm: 8px;
-            --shadow: 0 4px 12px rgba(17, 24, 39, 0.08);
-        }
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg);
-            color: var(--text-strong);
-        }
-        .app {
-            width: min(92%, 720px);
-            margin: 0 auto;
-            padding: 20px 0 70px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .hero, .filter-card, .panel, .metric-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-        }
-        .hero {
-            border-radius: var(--radius);
-            padding: 16px 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .hero h1 {
-            margin: 0;
-            font-size: 22px;
-            font-weight: 600;
-        }
-        .hero p {
-            margin: 0;
-            font-size: 14px;
-            color: var(--text-muted);
-        }
-        .filter-card {
-            border-radius: var(--radius);
-            padding: 16px 18px 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .filter-card__legend {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 0.4px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-        }
-        .filter-card__controls {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
-        }
-        .filter-card input[type="date"] {
-            grid-column: span 2;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 12px 14px;
-            font-size: 15px;
-            color: var(--text-strong);
-            background: var(--surface-alt);
-        }
-        .filter-card input[type="date"]:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-light);
-        }
-        .filter-card button {
-            border: none;
-            border-radius: var(--radius-sm);
-            padding: 12px 14px;
-            font-size: 15px;
-            font-weight: 600;
-            background: var(--accent);
-            color: #ffffff;
-        }
-        .filter-card__reset {
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--accent);
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .filters {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 2px;
-        }
-        .filters::-webkit-scrollbar {
-            display: none;
-        }
-        .filters button {
-            flex: 0 0 auto;
-            border: 1px solid var(--border);
-            background: var(--surface);
-            border-radius: 999px;
-            padding: 8px 14px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-        }
-        .filters button.active {
-            background: var(--accent);
-            color: #ffffff;
-            border-color: var(--accent);
-        }
-        .metric-strip {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-        }
-        .metric-card {
-            border-radius: var(--radius);
-            padding: 14px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            box-shadow: var(--shadow);
-        }
-        .metric-card__title {
-            margin: 0;
-            font-size: 12px;
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-        }
-        .metric-card__value {
-            margin: 0;
-            font-size: 26px;
-            font-weight: 600;
-        }
-        .metric-card__caption {
-            margin: 0;
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-        .panel {
-            border-radius: var(--radius);
-            padding: 16px 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            box-shadow: var(--shadow);
-        }
-        .panel header h2 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 600;
-        }
-        .panel header p {
-            margin: 2px 0 0;
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-        .panel ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-        }
-        .panel li {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        .panel li:last-child {
-            border-bottom: none;
-        }
-        .panel .label {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-strong);
-            word-break: break-word;
-            max-width: 70%;
-        }
-        .panel .value {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-strong);
-        }
-        .panel .empty {
-            padding: 12px 0;
-            font-size: 13px;
-            color: var(--text-muted);
-            text-align: center;
-        }
-        .panel-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-        @media (min-width: 520px) {
-            .filter-card__controls {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-            .filter-card input[type="date"] {
-                grid-column: span 2;
-            }
-            .filter-card button {
-                grid-column: auto;
-            }
-        }
-        @media (min-width: 640px) {
-            .panel-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Inbox Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --border: #e4e7ec;
+      --text-strong: #0f172a;
+      --text-muted: #475569;
+      --accent: #0f766e;
+      --accent-soft: #cffafe;
+      font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text-strong);
+    }
+
+    main {
+      width: min(960px, 100%);
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.75rem;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.5rem;
+    }
+
+    .filters button {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 0.65rem 0.9rem;
+      cursor: pointer;
+      transition: 0.2s ease;
+      width: 100%;
+    }
+
+    .filters button.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .filters .range-inputs {
+      display: flex;
+      gap: 0.5rem;
+      grid-column: 1 / -1;
+    }
+
+    .filters input[type="date"] {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.55rem 0.75rem;
+      background: #fff;
+    }
+
+    .filters button.apply {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .status-tag {
+      align-self: flex-start;
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .metric-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 1rem 1rem 0.85rem;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .metric-card__title {
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .metric-card__value {
+      font-size: 1.9rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .metric-card__caption {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .insights {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.85rem;
+    }
+
+    .insight-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .insight-card header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .insight-card header h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .insight-card header p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .insight-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .insight-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.2rem;
+      box-shadow: 0 18px 45px -30px rgba(15, 23, 42, 0.7);
+    }
+
+    .email-panel header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .email-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .email-table th,
+    .email-table td {
+      padding: 0.5rem 0.4rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    .email-table thead {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+      color: #334155;
+    }
+
+    .pagination {
+      margin-top: 0.85rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .pagination button {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 0.45rem 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .email-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    @media (max-width: 600px) {
+      .filters .range-inputs {
+        flex-direction: column;
+      }
+      .email-table th,
+      .email-table td {
+        font-size: 0.75rem;
+      }
+      .panel {
+        padding: 0.9rem 1rem;
+      }
+    }
+  </style>
 </head>
 <body>
-<div class="app">
-    <header class="hero">
-        <h1>Email Dashboard</h1>
-        <p id="hero-subtitle">Showing activity for today.</p>
+  <main>
+    <header>
+      <h1>Inbox dashboard</h1>
+      <p>Live metrics and paginated list of incoming messages.</p>
+      <span class="status-tag" id="status-text">Waiting for data...</span>
     </header>
 
-    <form class="filter-card" id="filter-form">
-        <div class="filter-card__legend">
-            <span>Filter by date</span>
-        </div>
-        <div class="filter-card__controls">
-            <input type="date" id="custom-date" />
-            <button type="submit">Apply</button>
-        </div>
-        <span class="filter-card__reset" id="reset-filter">Clear date</span>
-    </form>
-
-    <nav class="filters" aria-label="Time range filters">
-        <button data-range="day" class="active">Day</button>
-        <button data-range="week">Week</button>
-        <button data-range="month">Month</button>
-    </nav>
-
-    <div class="metric-strip">
-        <section class="metric-card">
-            <p class="metric-card__title">Total received</p>
-            <p class="metric-card__value" id="metric-total">—</p>
-            <p class="metric-card__caption">Messages captured for the selected range.</p>
-        </section>
-        <section class="metric-card">
-            <p class="metric-card__title">Busiest date</p>
-            <p class="metric-card__value" id="metric-busiest">N/A</p>
-            <p class="metric-card__caption" id="metric-busiest-caption">Detailed breakdown coming soon.</p>
-        </section>
+    <div class="filters">
+      <button data-range="day" class="active">Today</button>
+      <button data-range="yesterday">Yesterday</button>
+      <button data-range="week">Week</button>
+      <button data-range="month">Month</button>
+      <div class="range-inputs">
+        <input type="date" id="custom-start" />
+        <input type="date" id="custom-end" />
+        <button class="apply" id="apply-range">Apply</button>
+      </div>
     </div>
 
-    <div class="panel-grid">
-        <section class="panel">
-            <header>
-                <h2>Top sender domains</h2>
-                <p>Where messages arrive from most often.</p>
-            </header>
-            <ul id="top-domains">
-                <li class="empty">Insight data is not available yet.</li>
-            </ul>
-        </section>
-
-        <section class="panel">
-            <header>
-                <h2>Repeated recipients</h2>
-                <p>Email addresses triggered more than once.</p>
-            </header>
-            <ul id="repeated-recipients">
-                <li class="empty">Insight data is not available yet.</li>
-            </ul>
-        </section>
+    <div class="metrics">
+      <article class="metric-card">
+        <p class="metric-card__title">Total received</p>
+        <p class="metric-card__value" id="metric-total">-</p>
+        <p class="metric-card__caption">Records within the active range.</p>
+      </article>
+      <article class="metric-card">
+        <p class="metric-card__title">Busiest day</p>
+        <p class="metric-card__value" id="metric-busiest">-</p>
+        <p class="metric-card__caption" id="metric-busiest-caption">Last updated timestamp.</p>
+      </article>
     </div>
-</div>
 
-<script>
-    const rangeButtons = document.querySelectorAll('.filters button');
-    const customInput = document.getElementById('custom-date');
-    const heroSubtitle = document.getElementById('hero-subtitle');
-    const metricTotal = document.getElementById('metric-total');
-    const metricBusiest = document.getElementById('metric-busiest');
-    const busiestCaption = document.getElementById('metric-busiest-caption');
+    <div class="insights">
+      <article class="insight-card">
+        <header>
+          <h2>Top sender domains</h2>
+          <p>Where messages arrive most frequently.</p>
+        </header>
+        <ul class="insight-list" id="top-domains">
+          <li class="empty">Insight data is not available yet.</li>
+        </ul>
+      </article>
+      <article class="insight-card">
+        <header>
+          <h2>Repeated recipients</h2>
+          <p>Email addresses triggered multiple times.</p>
+        </header>
+        <ul class="insight-list" id="repeated-recipients">
+          <li class="empty">Insight data is not available yet.</li>
+        </ul>
+      </article>
+    </div>
 
-    const startOfDay = (d) => {
-        const date = new Date(d);
-        date.setHours(0, 0, 0, 0);
-        return date;
+    <section class="panel email-panel">
+      <header>
+        <div>
+          <h2 style="margin:0; font-size:1.1rem;">Emails</h2>
+          <p class="email-status" id="email-status">Loading emails...</p>
+        </div>
+      </header>
+      <div class="table-wrapper">
+        <table class="email-table">
+          <thead>
+            <tr>
+              <th>Received</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Subject</th>
+              <th>ID</th>
+            </tr>
+          </thead>
+          <tbody id="email-rows">
+            <tr>
+              <td colspan="5" style="text-align:center;">Waiting for data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button id="prev-page">Previous</button>
+        <span id="page-indicator">Page 1</span>
+        <button id="next-page">Next</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const statusText = document.getElementById("status-text");
+    const metricTotal = document.getElementById("metric-total");
+    const metricBusiest = document.getElementById("metric-busiest");
+    const busiestCaption = document.getElementById("metric-busiest-caption");
+    const emailRows = document.getElementById("email-rows");
+    const emailStatus = document.getElementById("email-status");
+    const prevBtn = document.getElementById("prev-page");
+    const nextBtn = document.getElementById("next-page");
+    const pageIndicator = document.getElementById("page-indicator");
+    const topDomainsList = document.getElementById("top-domains");
+    const repeatedRecipientsList = document.getElementById("repeated-recipients");
+
+    const ranges = document.querySelectorAll(".filters button[data-range]");
+    const startInput = document.getElementById("custom-start");
+    const endInput = document.getElementById("custom-end");
+    const applyBtn = document.getElementById("apply-range");
+
+    let currentPage = 1;
+    const pageSize = 12;
+    let currentQuery = "";
+
+    const setStatus = (text) => {
+      if (statusText) statusText.textContent = text;
     };
 
-    const startOfWeek = (d) => {
-        const date = startOfDay(d);
-        const day = date.getDay();
-        date.setDate(date.getDate() - day);
-        return date;
-    };
-
-    const startOfMonth = (d) => {
-        const date = startOfDay(d);
-        date.setDate(1);
-        return date;
-    };
-
-    const formatDate = (date) => date.toISOString().split('T')[0];
-
-    const setActiveRange = (range) => {
-        rangeButtons.forEach((button) => button.classList.toggle('active', button.dataset.range === range));
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
     };
 
     const buildRange = (range) => {
-        const now = new Date();
-        let start;
-        switch (range) {
-            case 'week':
-                start = startOfWeek(now);
-                heroSubtitle.textContent = 'Showing activity for the last 7 days.';
-                break;
-            case 'month':
-                start = startOfMonth(now);
-                heroSubtitle.textContent = 'Showing activity for the current month.';
-                break;
-            default:
-                start = startOfDay(now);
-                heroSubtitle.textContent = 'Showing activity for today.';
+      const now = new Date();
+      switch (range) {
+        case "yesterday": {
+          const yesterday = new Date(now);
+          yesterday.setDate(yesterday.getDate() - 1);
+          const value = formatDate(yesterday);
+          return { start: value, end: value };
         }
-        return { start: formatDate(start), end: formatDate(now) };
-    };
-
-    const fetchStats = async (query = '') => {
-        try {
-            const response = await fetch('/dashboard-data' + query);
-            if (!response.ok) throw new Error('Unable to load stats');
-            const data = await response.json();
-
-            metricTotal.textContent = data.filtered ?? data.today ?? '0';
-            metricBusiest.textContent = data.filtered !== null ? formatDate(new Date()) : 'N/A';
-            busiestCaption.textContent = data.filtered !== null ? `Based on ${data.filtered} messages.` : 'Detailed breakdown coming soon.';
-        } catch (err) {
-            metricTotal.textContent = '?';
-            metricBusiest.textContent = '?';
-            busiestCaption.textContent = err.message;
-            console.error(err);
+        case "week": {
+          const weekStart = new Date(now);
+          weekStart.setDate(weekStart.getDate() - 6);
+          return { start: formatDate(weekStart), end: formatDate(now) };
         }
+        case "month": {
+          const monthStart = new Date(now);
+          monthStart.setDate(1);
+          return { start: formatDate(monthStart), end: formatDate(now) };
+        }
+        default:
+          const today = formatDate(now);
+          return { start: today, end: today };
+      }
     };
 
-    const applyRange = (range) => {
-        setActiveRange(range);
-        const span = buildRange(range);
-        fetchStats(`?startDate=${span.start}&endDate=${span.end}`);
-        customInput.value = '';
+    const normalizeQuery = (query) => {
+      if (!query) return "";
+      return query.startsWith("?") ? query : `?${query}`;
     };
 
-    rangeButtons.forEach((button) => {
-        button.addEventListener('click', () => applyRange(button.dataset.range));
-    });
+    const renderList = (element, data, emptyText) => {
+      if (!element) return;
+      if (!Array.isArray(data) || !data.length) {
+        element.innerHTML = `<li class="empty">${emptyText}</li>`;
+        return;
+      }
+      element.innerHTML = data
+        .map((item) => {
+          const label = item.domain || item.recipient || "ï¿½";
+          return `<li><span>${label}</span><span>x${item.count}</span></li>`;
+        })
+        .join("");
+    };
 
-    document.getElementById('filter-form').addEventListener('submit', (event) => {
-        event.preventDefault();
-        if (!customInput.value) return;
-        const selected = new Date(customInput.value);
-        if (Number.isNaN(selected.getTime())) return;
-        const start = formatDate(startOfDay(selected));
-        const end = formatDate(selected);
-        heroSubtitle.textContent = `Showing activity for ${start}.`;
-        setActiveRange('');
+    const fetchEmailList = async (query = "") => {
+      emailStatus.textContent = "Loading emails...";
+      emailRows.innerHTML = `<tr><td colspan=\"5\" style=\"text-align:center;\">Loading emails...</td></tr>`;
+      try {
+        const normalized = normalizeQuery(query);
+        const separator = normalized ? (normalized.includes("?") ? "&" : "?") : "?";
+        const response = await fetch(`/dashboard-emails${normalized}${separator}page=${currentPage}&pageSize=${pageSize}`);
+        if (!response.ok) throw new Error("Unable to load emails");
+        const data = await response.json();
+        const rows = data.emails
+          .map((email) => {
+            const received = email.created_at ? new Date(email.created_at).toLocaleString() : "ï¿½";
+            const subject = email.subject ? email.subject.replace(/</g, "&lt;").replace(/>/g, "&gt;") : "ï¿½";
+            return `<tr>
+              <td>${received}</td>
+              <td>${email.from_email || "ï¿½"}</td>
+              <td>${email.to_email || "ï¿½"}</td>
+              <td>${subject}</td>
+              <td>${email.id.slice(-6)}</td>
+            </tr>`;
+          })
+          .join("");
+        emailRows.innerHTML = rows || `<tr><td colspan=\"5\" style=\"text-align:center;\">No emails for this range.</td></tr>`;
+        emailStatus.textContent = `${data.emails.length} of ${data.total} showing`;
+        pageIndicator.textContent = `Page ${currentPage}`;
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = data.emails.length < pageSize || data.total <= currentPage * pageSize;
+      } catch (err) {
+        emailRows.innerHTML = `<tr><td colspan=\"5\" style=\"text-align:center; color:#b91c1c;\">${err.message}</td></tr>`;
+        emailStatus.textContent = "Unable to load emails.";
+      }
+    };
+
+    const fetchStats = async (query = "") => {
+      setStatus("Loading stats...");
+      try {
+        const response = await fetch(`/dashboard-data${normalizeQuery(query)}`);
+        if (!response.ok) throw new Error("Unable to load stats");
+        const data = await response.json();
+        metricTotal.textContent = data.filtered ?? data.today ?? "0";
+        metricBusiest.textContent = data.filtered !== null ? formatDate(new Date()) : "ï¿½";
+        busiestCaption.textContent = data.filtered !== null ? `Based on ${data.filtered} messages.` : "New data will fill here.";
+        renderList(topDomainsList, data.topDomains, "Insight data is not available yet.");
+        renderList(repeatedRecipientsList, data.repeatedRecipients, "Insight data is not available yet.");
+        setStatus(`Updated ${new Date().toLocaleTimeString()}`);
+        currentQuery = normalizeQuery(query);
+        currentPage = 1;
+        await fetchEmailList(currentQuery);
+      } catch (err) {
+        console.error(err);
+        metricTotal.textContent = "ï¿½";
+        metricBusiest.textContent = "ï¿½";
+        busiestCaption.textContent = err.message;
+        renderList(topDomainsList, [], "Insight data is not available yet.");
+        renderList(repeatedRecipientsList, [], "Insight data is not available yet.");
+        setStatus(err.message || "Unable to load stats");
+      }
+    };
+
+    const setActiveRange = (range) => {
+      ranges.forEach((btn) => btn.classList.toggle("active", btn.dataset.range === range));
+    };
+
+    ranges.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        setActiveRange(btn.dataset.range);
+        const { start, end } = buildRange(btn.dataset.range);
         fetchStats(`?startDate=${start}&endDate=${end}`);
+      });
     });
 
-    document.getElementById('reset-filter').addEventListener('click', () => {
-        customInput.value = '';
-        applyRange('day');
+    applyBtn.addEventListener("click", () => {
+      const start = startInput.value;
+      const end = endInput.value;
+      if (!start || !end) return;
+      setActiveRange("");
+      fetchStats(`?startDate=${start}&endDate=${end}`);
     });
 
-    applyRange('day');
-</script>
+    prevBtn.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage -= 1;
+        fetchEmailList(currentQuery);
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      currentPage += 1;
+      fetchEmailList(currentQuery);
+    });
+
+    fetchStats("?");
+  </script>
 </body>
 </html>
