@@ -60,6 +60,12 @@ app.get("/health", (req, res) => {
   res.json({ ok: true });
 });
 
+function toAbuDhabi(date) {
+  return new Date(date).toLocaleString("en-US", {
+    timeZone: "Asia/Dubai"
+  });
+}
+
 // inbox list with parsed text and html body
 app.get("/inbox/:address", async (req, res) => {
   try {
@@ -96,8 +102,8 @@ app.get("/inbox/:address", async (req, res) => {
         body_html: htmlBody,
         bucket: null,
         object_key: null,
-        created_at: doc.receivedAt,
-        updated_at: doc.receivedAt
+        created_at: toAbuDhabi(doc.receivedAt),
+        updated_at: toAbuDhabi(doc.receivedAt)
       });
     }
 
