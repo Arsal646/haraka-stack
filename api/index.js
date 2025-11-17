@@ -11,6 +11,28 @@ const COLLECTION = process.env.MONGO_COLLECTION || "emails";
 
 let collection;
 
+// helper to parse YYYY-MM-DD into UTC start and end of that day
+function getUtcDayRange(dateStr) {
+  const parts = dateStr.split("-");
+  if (parts.length !== 3) {
+    throw new Error("Invalid date format, use YYYY-MM-DD");
+  }
+
+  const [year, month, day] = parts.map(Number);
+  if (!year || !month || !day) {
+    throw new Error("Invalid date value");
+  }
+
+  const start = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+  const end = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    throw new Error("Invalid date");
+  }
+
+  return { start, end };
+}
+
 // connect to Mongo and start server
 async function start() {
   try {
@@ -122,5 +144,31 @@ app.get("/message/:id", async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// simple email count by date
+// GET /email-count?date=2025-11-17
+app.get("/email-count", async (req, res) => {
+  try {
+    const { date } = req.query;
+
+    if (!date) {
+      return res.status(400).json({
+        ok: false,
+        error: "Missing 'date' query param, use YYYY-MM-DD"
+      });
+    }
+
+    const { start, end } = getUtcDayRange(date);
+
+    const count = await collection.countDocuments({
+      receivedAt: { $gte: start, $lte: end }
+    });
+
+    res.json({ ok: true, date, count });
+  } catch (err) {
+    console.error("Email count error", err.message);
+    res.status(400).json({ ok: false, error: err.message });
   }
 });
