@@ -1,4 +1,5 @@
 const { MongoClient } = require("mongodb");
+const constants = require("haraka-constants");
 
 let collection = null;
 
@@ -21,10 +22,12 @@ exports.register = function () {
       plugin.logerror("Mongo connection error: " + err.message);
     });
 
-  // Add more logs here
   plugin.loginfo("Registering hook: data_post");
-
   this.register_hook("data_post", "save_to_mongo");
+
+  // new, always mark queue as OK, so SMTP client gets 250
+  plugin.loginfo("Registering hook: queue");
+  this.register_hook("queue", "mark_queued_ok");
 };
 
 exports.save_to_mongo = function (next, connection) {
@@ -50,7 +53,6 @@ exports.save_to_mongo = function (next, connection) {
   const subject = txn.header ? txn.header.get("subject") || "" : "";
   plugin.loginfo("Subject: " + subject);
 
-  // Log how many times get_data fires
   let getDataCount = 0;
 
   plugin.loginfo("Calling message_stream.get_data...");
@@ -81,11 +83,11 @@ exports.save_to_mongo = function (next, connection) {
         .insertOne(doc)
         .then(() => {
           plugin.loginfo("Inserted email for " + rcpt_to + " with UUID " + txn.uuid);
-          next();
+          next(); // continue to queue hook
         })
         .catch((e) => {
           plugin.logerror("Mongo insert error: " + e.message);
-          next();
+          next(); // still continue, or you can next(constants.denysoft) if you want retry on DB error
         });
 
     } catch (e) {
@@ -93,4 +95,11 @@ exports.save_to_mongo = function (next, connection) {
       next();
     }
   });
+};
+
+// this is called on the 'queue' hook, after data_post
+exports.mark_queued_ok = function (next, connection) {
+  const plugin = this;
+  plugin.loginfo("QUEUE hook, marking message as accepted");
+  return next(constants.ok);
 };
