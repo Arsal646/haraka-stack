@@ -2,3 +2,4 @@ tls
 rcpt_to.in_host_list
 headers
 mongodb_store
+queue/discard
