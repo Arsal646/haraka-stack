@@ -16,20 +16,6 @@ exports.register = function () {
     .then((client) => {
       const db = client.db(dbName);
       collection = db.collection(collName);
-      
-      // Create TTL index to automatically delete records after 60 days
-      const expireAfterSeconds = 90 * 24 * 60 * 60; // 90 days in seconds
-      
-      collection.createIndex({ "receivedAt": 1 }, { 
-        expireAfterSeconds: expireAfterSeconds 
-      })
-      .then(() => {
-        plugin.loginfo(`TTL index created - emails will auto-delete after ${expireAfterSeconds} seconds (60 days)`);
-      })
-      .catch((err) => {
-        plugin.logerror("TTL index creation error: " + err.message);
-      });
-      
       plugin.loginfo(`Mongo connected to ${url}, db ${dbName}, collection ${collName}`);
     })
     .catch((err) => {
