@@ -13,18 +13,19 @@
     }
 
     body {
-      background: #f3f4f6;
+      background: #fafafa;
       color: #111827;
-      padding: 16px;
+      padding: 24px 16px;
+      min-height: 100vh;
     }
 
     .container {
-      max-width: 560px;
+      max-width: 540px;
       margin: 0 auto;
     }
 
     .header {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
 
     .title-row {
@@ -32,142 +33,147 @@
       justify-content: space-between;
       align-items: center;
       gap: 12px;
+      margin-bottom: 6px;
     }
 
     .title {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 600;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.025em;
+      color: #0f172a;
     }
 
     .tz-badge {
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid #e5e7eb;
-      background: #f9fafb;
-      color: #4b5563;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: #64748b;
       white-space: nowrap;
+      font-weight: 500;
     }
 
     .subtitle {
-      font-size: 13px;
-      color: #6b7280;
-      margin-top: 4px;
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 400;
     }
 
     .filters-card {
       background: #ffffff;
-      border-radius: 16px;
-      padding: 12px 14px;
-      box-shadow: 0 8px 16px rgba(15, 23, 42, 0.06);
-      margin-bottom: 16px;
-      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      margin-bottom: 14px;
+      border: 1px solid #f1f5f9;
     }
 
     .filters-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 10px;
     }
 
     .filters-title {
-      font-size: 13px;
-      font-weight: 500;
-      color: #374151;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .filters-helper {
-      font-size: 11px;
-      color: #9ca3af;
+      font-size: 10px;
+      color: #cbd5e1;
     }
 
     .chip-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 6px;
+      gap: 6px;
     }
 
     .chip {
-      padding: 6px 12px;
-      font-size: 13px;
-      border-radius: 999px;
-      border: 1px solid #d1d5db;
-      background: #f9fafb;
-      color: #374151;
+      padding: 7px 13px;
+      font-size: 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #475569;
       cursor: pointer;
-      transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      font-weight: 500;
     }
 
     .chip:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(15, 23, 42, 0.06);
+      background: #f1f5f9;
+      border-color: #cbd5e1;
     }
 
     .chip.active {
-      background: #111827;
+      background: #0f172a;
       color: #ffffff;
-      border-color: #111827;
-      box-shadow: 0 8px 14px rgba(15, 23, 42, 0.26);
+      border-color: #0f172a;
     }
 
     .card {
       background: #ffffff;
-      border-radius: 18px;
-      padding: 18px 18px;
-      box-shadow:
-        0 14px 24px rgba(15, 23, 42, 0.08),
-        0 4px 6px rgba(15, 23, 42, 0.04);
-      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #f1f5f9;
     }
 
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 8px;
-      margin-bottom: 10px;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f8fafc;
     }
 
     .card-title-block {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
     }
 
     .card-title {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600;
-      color: #111827;
+      color: #0f172a;
+      letter-spacing: -0.01em;
     }
 
     .card-range-label {
-      font-size: 12px;
-      color: #6b7280;
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 500;
     }
 
     .card-range-detail {
-      font-size: 11px;
-      color: #9ca3af;
+      font-size: 10px;
+      color: #94a3b8;
     }
 
     .badge-pill {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid #e5e7eb;
-      font-size: 11px;
-      color: #6b7280;
-      background: #f9fafb;
+      gap: 5px;
+      padding: 4px 9px;
+      border-radius: 6px;
+      font-size: 10px;
+      color: #64748b;
+      background: #f8fafc;
+      font-weight: 500;
     }
 
     .dot {
-      width: 7px;
-      height: 7px;
+      width: 5px;
+      height: 5px;
       border-radius: 999px;
       background: #10b981;
     }
@@ -175,165 +181,201 @@
     .count-row {
       display: flex;
       align-items: baseline;
-      gap: 6px;
-      margin: 6px 0 8px;
+      gap: 8px;
+      margin-bottom: 12px;
     }
 
     .count-value {
-      font-size: 34px;
+      font-size: 36px;
       font-weight: 700;
-      letter-spacing: -0.04em;
+      letter-spacing: -0.03em;
+      color: #0f172a;
     }
 
     .count-unit {
-      font-size: 13px;
-      color: #6b7280;
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 500;
     }
 
     .status-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 4px;
       gap: 8px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f8fafc;
     }
 
     .status {
-      font-size: 12px;
-      color: #6b7280;
+      font-size: 11px;
+      color: #94a3b8;
     }
 
     .status.error {
-      color: #b91c1c;
+      color: #dc2626;
     }
 
     .status.loading {
-      color: #2563eb;
+      color: #3b82f6;
     }
 
     .refresh-hint {
-      font-size: 11px;
-      color: #9ca3af;
-      text-align: right;
+      font-size: 10px;
+      color: #cbd5e1;
     }
 
     .top-sender-block {
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
     }
 
     .top-sender-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
     }
 
     .top-sender-label {
-      font-size: 12px;
-      font-weight: 500;
-      color: #374151;
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .top-sender-note {
-      font-size: 11px;
-      color: #9ca3af;
+      font-size: 10px;
+      color: #cbd5e1;
     }
 
     .top-sender-list {
-      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
     }
 
     .top-sender-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 4px 0;
-      font-size: 12px;
-      border-bottom: 1px solid #e5e7eb;
+      padding: 8px 0;
+      font-size: 11px;
     }
 
-    .top-sender-row:last-child {
-      border-bottom: none;
+    .top-sender-row:not(:last-child) {
+      border-bottom: 1px solid #f1f5f9;
     }
 
     .top-sender-email {
-      color: #111827;
+      color: #0f172a;
       font-weight: 500;
     }
 
     .top-sender-count {
-      font-size: 11px;
-      color: #6b7280;
+      font-size: 10px;
+      color: #94a3b8;
+      font-weight: 500;
     }
 
     .breakdown {
-      margin-top: 14px;
-      border-top: 1px solid #f3f4f6;
-      padding-top: 10px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #f8fafc;
     }
 
     .breakdown-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
     }
 
     .breakdown-title {
-      font-size: 12px;
-      font-weight: 500;
-      color: #4b5563;
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .breakdown-muted {
-      font-size: 11px;
-      color: #9ca3af;
+      font-size: 10px;
+      color: #cbd5e1;
     }
 
     .breakdown-list {
-      max-height: 190px;
+      max-height: 200px;
       overflow-y: auto;
-      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
     }
 
     .breakdown-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 6px 0;
-      font-size: 12px;
-      border-bottom: 1px solid #f3f4f6;
+      padding: 8px 0;
+      font-size: 11px;
     }
 
-    .breakdown-row:last-child {
-      border-bottom: none;
+    .breakdown-row:not(:last-child) {
+      border-bottom: 1px solid #f8fafc;
     }
 
     .breakdown-date {
-      color: #374151;
+      color: #475569;
+      font-weight: 500;
     }
 
     .breakdown-count {
-      font-weight: 500;
-      color: #111827;
+      font-weight: 600;
+      color: #0f172a;
     }
 
     @media (max-width: 480px) {
+      body {
+        padding: 16px 12px;
+      }
+
       .card {
-        padding: 14px 14px;
+        padding: 16px;
       }
 
       .count-value {
-        font-size: 30px;
+        font-size: 32px;
       }
 
       .title {
-        font-size: 19px;
+        font-size: 18px;
       }
+
+      .filters-card {
+        padding: 12px;
+      }
+    }
+
+    .breakdown-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .breakdown-list::-webkit-scrollbar-track {
+      background: #f8fafc;
+      border-radius: 3px;
+    }
+
+    .breakdown-list::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 3px;
+    }
+
+    .breakdown-list::-webkit-scrollbar-thumb:hover {
+      background: #cbd5e1;
     }
   </style>
 </head>
@@ -588,7 +630,6 @@
         return;
       }
 
-      // show from current day to previous day
       for (let i = 0; i < dateObjs.length; i++) {
         const d = dateObjs[i];
         const m = metrics[i];
@@ -609,7 +650,6 @@
     function renderTopSenders(metrics) {
       topSenderListEl.innerHTML = "";
 
-      // aggregate across days
       const map = {};
       metrics.forEach((m) => {
         m.senders.forEach((s) => {
