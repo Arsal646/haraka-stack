@@ -223,10 +223,13 @@
       border-radius: 12px;
       background: #f9fafb;
       border: 1px solid #e5e7eb;
+    }
+
+    .top-sender-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 8px;
+      margin-bottom: 4px;
     }
 
     .top-sender-label {
@@ -235,12 +238,30 @@
       color: #374151;
     }
 
-    .top-sender-text {
+    .top-sender-note {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .top-sender-list {
+      margin-top: 4px;
+    }
+
+    .top-sender-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
       font-size: 12px;
-      color: #4b5563;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .top-sender-row:last-child {
+      border-bottom: none;
     }
 
     .top-sender-email {
+      color: #111827;
       font-weight: 500;
     }
 
@@ -365,10 +386,13 @@
       </div>
 
       <div class="top-sender-block">
-        <div>
-          <div class="top-sender-label">Most repeated sender</div>
-          <div class="top-sender-text" id="top-sender-text">
-            No sender data yet for this range.
+        <div class="top-sender-header">
+          <span class="top-sender-label">Top senders</span>
+          <span class="top-sender-note">Only senders with more than 2 emails.</span>
+        </div>
+        <div id="top-sender-list" class="top-sender-list">
+          <div class="top-sender-row">
+            <span>No sender data yet for this range.</span>
           </div>
         </div>
       </div>
@@ -377,7 +401,7 @@
         <div class="breakdown-header">
           <span class="breakdown-title">Daily breakdown</span>
           <span class="breakdown-muted" id="breakdown-caption">
-            Showing each day in this range.
+            From current day to previous days.
           </span>
         </div>
         <div class="breakdown-list" id="breakdown-list"></div>
@@ -386,7 +410,6 @@
   </div>
 
   <script>
-    // Always use Abu Dhabi, Dubai time zone
     function abuDhabiNow() {
       const now = new Date();
       const parts = new Intl.DateTimeFormat("en-US", {
@@ -417,7 +440,7 @@
     const rangeLabelEl = document.getElementById("range-label");
     const rangeDetailEl = document.getElementById("range-detail");
     const breakdownListEl = document.getElementById("breakdown-list");
-    const topSenderTextEl = document.getElementById("top-sender-text");
+    const topSenderListEl = document.getElementById("top-sender-list");
 
     const chipToday = document.getElementById("chip-today");
     const chipYesterday = document.getElementById("chip-yesterday");
@@ -439,7 +462,6 @@
       });
     }
 
-    // Use local date parts, not UTC ISO
     function formatDate(date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -519,9 +541,8 @@
 
     function detailForRange(dates) {
       if (!dates.length) return "";
-      const sorted = [...dates].sort((a, b) => a - b);
-      const start = sorted[0];
-      const end = sorted[sorted.length - 1];
+      const start = dates[dates.length - 1];
+      const end = dates[0];
       if (start.toDateString() === end.toDateString()) {
         return formatShortWithYear(start);
       }
@@ -534,15 +555,11 @@
         throw new Error("API " + res.status);
       }
       const data = await res.json();
-      const email =
-        data.top_sender && data.top_sender.email ? data.top_sender.email : null;
-      const emailCount =
-        data.top_sender && data.top_sender.count ? data.top_sender.count : 0;
+      const senders = Array.isArray(data.senders) ? data.senders : [];
 
       return {
         count: data.count || 0,
-        topSenderEmail: email,
-        topSenderCount: emailCount
+        senders
       };
     }
 
@@ -562,17 +579,17 @@
       breakdownListEl.innerHTML = "";
 
       if (!dateObjs.length) {
-        const emptyRow = document.createElement("div");
-        emptyRow.className = "breakdown-row";
-        emptyRow.innerHTML =
+        const row = document.createElement("div");
+        row.className = "breakdown-row";
+        row.innerHTML =
           '<span class="breakdown-date">No data</span>' +
           '<span class="breakdown-count">0</span>';
-        breakdownListEl.appendChild(emptyRow);
+        breakdownListEl.appendChild(row);
         return;
       }
 
-      // show in chronological order, oldest first
-      for (let i = dateObjs.length - 1; i >= 0; i--) {
+      // show from current day to previous day
+      for (let i = 0; i < dateObjs.length; i++) {
         const d = dateObjs[i];
         const m = metrics[i];
 
@@ -589,39 +606,43 @@
       }
     }
 
-    function updateTopSender(metrics) {
-      const senderTotals = {};
+    function renderTopSenders(metrics) {
+      topSenderListEl.innerHTML = "";
 
+      // aggregate across days
+      const map = {};
       metrics.forEach((m) => {
-        if (!m.topSenderEmail) return;
-        const key = m.topSenderEmail;
-        senderTotals[key] = (senderTotals[key] || 0) + m.topSenderCount;
+        m.senders.forEach((s) => {
+          if (!s.email) return;
+          map[s.email] = (map[s.email] || 0) + (s.count || 0);
+        });
       });
 
-      const entries = Object.entries(senderTotals);
+      const entries = Object.entries(map)
+        .map(([email, total]) => ({ email, total }))
+        .filter((item) => item.total > 2)
+        .sort((a, b) => b.total - a.total);
 
       if (!entries.length) {
-        topSenderTextEl.textContent = "No sender data yet for this range.";
+        const row = document.createElement("div");
+        row.className = "top-sender-row";
+        row.innerHTML = "<span>No sender with more than 2 emails.</span>";
+        topSenderListEl.appendChild(row);
         return;
       }
 
-      let bestEmail = null;
-      let bestCount = 0;
-
-      entries.forEach(([email, total]) => {
-        if (total > bestCount) {
-          bestCount = total;
-          bestEmail = email;
-        }
+      entries.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "top-sender-row";
+        row.innerHTML =
+          '<span class="top-sender-email">' +
+          item.email +
+          "</span>" +
+          '<span class="top-sender-count">' +
+          item.total +
+          " emails</span>";
+        topSenderListEl.appendChild(row);
       });
-
-      topSenderTextEl.innerHTML =
-        '<span class="top-sender-email">' +
-        bestEmail +
-        "</span>" +
-        ' <span class="top-sender-count">(' +
-        bestCount +
-        " emails)</span>";
     }
 
     async function loadRange(range) {
@@ -642,14 +663,15 @@
         countValueEl.textContent = total.toString();
 
         renderBreakdown(dateObjs, metrics);
-        updateTopSender(metrics);
+        renderTopSenders(metrics);
 
         setStatus("Updated just now.", "normal");
       } catch (err) {
         console.error(err);
         setStatus("Error, " + err.message, "error");
         breakdownListEl.innerHTML = "";
-        topSenderTextEl.textContent = "No sender data for this range.";
+        topSenderListEl.innerHTML =
+          '<div class="top-sender-row"><span>No data for this range.</span></div>';
       }
     }
 

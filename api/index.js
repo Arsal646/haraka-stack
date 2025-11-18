@@ -149,7 +149,7 @@ app.get("/email-count", async (req, res) => {
       return res.status(400).json({ ok: false, error: "invalid date" });
     }
 
-    // Abu Dhabi local day
+    // Abu Dhabi local day start
     const localStartMs = Date.UTC(year, month - 1, day, 0, 0, 0);
     const oneDayMs = 24 * 60 * 60 * 1000;
     const offsetMs = 4 * 60 * 60 * 1000; // UTC+4
@@ -158,51 +158,46 @@ app.get("/email-count", async (req, res) => {
     const startUtc = new Date(localStartMs - offsetMs);
     const endUtc = new Date(localStartMs + oneDayMs - offsetMs);
 
-    // total count
-    const countPromise = collection.countDocuments({
+    const matchStage = {
       receivedAt: { $gte: startUtc, $lt: endUtc }
-    });
+    };
 
-    // most repeated source email in that range
-    const topSenderPromise = collection
+    const countPromise = collection.countDocuments(matchStage);
+
+    const sendersAggPromise = collection
       .aggregate([
-        {
-          $match: {
-            receivedAt: { $gte: startUtc, $lt: endUtc }
-          }
-        },
+        { $match: matchStage },
         {
           $group: {
             _id: "$mail_from",
             count: { $sum: 1 }
           }
         },
-        { $sort: { count: -1 } },
-        { $limit: 1 }
+        { $sort: { count: -1 } }
       ])
       .toArray();
 
-    const [count, topSenderAgg] = await Promise.all([
+    const [count, sendersAgg] = await Promise.all([
       countPromise,
-      topSenderPromise
+      sendersAggPromise
     ]);
 
-    let topSender = null;
-    if (topSenderAgg.length > 0 && topSenderAgg[0]._id) {
-      topSender = {
-        email: topSenderAgg[0]._id,
-        count: topSenderAgg[0].count
-      };
-    }
+    const senders = sendersAgg
+      .filter((s) => s._id && s.count > 2) // more than 2 emails for that day
+      .map((s) => ({
+        email: s._id,
+        count: s.count
+      }));
 
     res.json({
       ok: true,
       date: dateStr,
       count,
-      top_sender: topSender
+      senders
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false, error: "server error" });
   }
 });
+
