@@ -19,7 +19,7 @@
     }
 
     .container {
-      max-width: 480px;
+      max-width: 520px;
       margin: 0 auto;
     }
 
@@ -27,43 +27,89 @@
       margin-bottom: 16px;
     }
 
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
     .title {
       font-size: 20px;
       font-weight: 600;
-      margin-bottom: 4px;
+    }
+
+    .tz-badge {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      color: #4b5563;
+      white-space: nowrap;
     }
 
     .subtitle {
       font-size: 13px;
-      color: #666;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .filters-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 12px 14px;
+      box-shadow: 0 8px 14px rgba(0, 0, 0, 0.04);
+      margin-bottom: 16px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .filters-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .filters-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .filters-helper {
+      font-size: 11px;
+      color: #9ca3af;
     }
 
     .chip-row {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin: 16px 0;
+      margin-top: 4px;
     }
 
     .chip {
       padding: 6px 12px;
-      font-size: 14px;
+      font-size: 13px;
       border-radius: 999px;
-      border: 1px solid #ddd;
-      background: #fff;
-      color: #333;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      color: #374151;
       cursor: pointer;
-      transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+      transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
     }
 
     .chip:hover {
       transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
     }
 
     .chip.active {
       background: #111827;
       color: #fff;
       border-color: #111827;
+      box-shadow: 0 6px 12px rgba(15, 23, 42, 0.25);
     }
 
     .card {
@@ -71,21 +117,29 @@
       border-radius: 16px;
       padding: 16px 18px;
       box-shadow:
-        0 10px 15px rgba(0, 0, 0, 0.05),
-        0 4px 6px rgba(0, 0, 0, 0.03);
+        0 12px 18px rgba(15, 23, 42, 0.06),
+        0 4px 6px rgba(15, 23, 42, 0.03);
+      border: 1px solid #e5e7eb;
     }
 
     .card-header {
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
+      align-items: flex-start;
       margin-bottom: 8px;
+      gap: 8px;
+    }
+
+    .card-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
     .card-title {
       font-size: 15px;
       font-weight: 500;
-      color: #374151;
+      color: #111827;
     }
 
     .card-range-label {
@@ -93,21 +147,35 @@
       color: #6b7280;
     }
 
+    .card-range-detail {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
     .count-row {
       display: flex;
       align-items: baseline;
       gap: 6px;
-      margin: 4px 0 8px;
+      margin: 6px 0 8px;
     }
 
     .count-value {
       font-size: 32px;
       font-weight: 700;
+      letter-spacing: -0.03em;
     }
 
     .count-unit {
       font-size: 13px;
       color: #6b7280;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+      gap: 8px;
     }
 
     .status {
@@ -122,34 +190,140 @@
     .status.loading {
       color: #2563eb;
     }
+
+    .refresh-hint {
+      font-size: 11px;
+      color: #9ca3af;
+      text-align: right;
+    }
+
+    .breakdown {
+      margin-top: 14px;
+      border-top: 1px solid #f3f4f6;
+      padding-top: 10px;
+    }
+
+    .breakdown-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .breakdown-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: #4b5563;
+    }
+
+    .breakdown-muted {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .breakdown-list {
+      max-height: 180px;
+      overflow-y: auto;
+      margin-top: 4px;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      font-size: 12px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .breakdown-row:last-child {
+      border-bottom: none;
+    }
+
+    .breakdown-date {
+      color: #374151;
+    }
+
+    .breakdown-count {
+      font-weight: 500;
+      color: #111827;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      font-size: 11px;
+      color: #6b7280;
+      background: #f9fafb;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #10b981;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <header class="header">
-      <h1 class="title">Email Count Dashboard</h1>
+      <div class="title-row">
+        <h1 class="title">Email Count Dashboard</h1>
+        <span class="tz-badge">UTC+4, Dubai time</span>
+      </div>
       <p class="subtitle">
-        Quick view of emails received today, yesterday, this week, and this month.
+        Track how many emails your system received for the selected date range.
       </p>
     </header>
 
-    <div class="chip-row" id="range-chips">
-      <button class="chip active" data-range="today" id="chip-today">Today</button>
-      <button class="chip" data-range="yesterday" id="chip-yesterday">Yesterday</button>
-      <button class="chip" data-range="week" id="chip-week">Week</button>
-      <button class="chip" data-range="month" id="chip-month">Month</button>
-    </div>
+    <section class="filters-card">
+      <div class="filters-header">
+        <span class="filters-title">Date filters</span>
+        <span class="filters-helper">Tap a range to update the numbers.</span>
+      </div>
+      <div class="chip-row" id="range-chips">
+        <button class="chip active" data-range="today" id="chip-today">Today</button>
+        <button class="chip" data-range="yesterday" id="chip-yesterday">Yesterday</button>
+        <button class="chip" data-range="week" id="chip-week">Last 7 days</button>
+        <button class="chip" data-range="month" id="chip-month">Last 30 days</button>
+      </div>
+    </section>
 
     <section class="card">
       <div class="card-header">
-        <span class="card-title">Total emails</span>
-        <span class="card-range-label" id="range-label">Today</span>
+        <div class="card-title-block">
+          <span class="card-title">Total emails</span>
+          <span class="card-range-label" id="range-label">Today</span>
+          <span class="card-range-detail" id="range-detail"></span>
+        </div>
+        <span class="badge-pill">
+          <span class="dot"></span>
+          Live summary
+        </span>
       </div>
       <div class="count-row">
         <span class="count-value" id="count-value">0</span>
         <span class="count-unit">emails</span>
       </div>
-      <p class="status" id="status-text">Loading data, please wait.</p>
+      <div class="status-row">
+        <p class="status" id="status-text">Loading data, please wait.</p>
+        <p class="refresh-hint">Auto refresh on filter change.</p>
+      </div>
+
+      <div class="breakdown">
+        <div class="breakdown-header">
+          <span class="breakdown-title">Daily breakdown</span>
+          <span class="breakdown-muted" id="breakdown-caption">Showing each day in this range.</span>
+        </div>
+        <div class="breakdown-list" id="breakdown-list">
+          <!-- rows go here -->
+        </div>
+      </div>
     </section>
   </div>
 
@@ -183,6 +357,8 @@
     const countValueEl = document.getElementById("count-value");
     const statusTextEl = document.getElementById("status-text");
     const rangeLabelEl = document.getElementById("range-label");
+    const rangeDetailEl = document.getElementById("range-detail");
+    const breakdownListEl = document.getElementById("breakdown-list");
 
     const chipToday = document.getElementById("chip-today");
     const chipYesterday = document.getElementById("chip-yesterday");
@@ -190,7 +366,18 @@
     const chipMonth = document.getElementById("chip-month");
 
     function formatShort(date) {
-      return date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+      return date.toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "short"
+      });
+    }
+
+    function formatShortWithYear(date) {
+      return date.toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      });
     }
 
     // use local date parts, not UTC ISO
@@ -213,13 +400,13 @@
       const weekStart = new Date(now);
       weekStart.setDate(weekStart.getDate() - 6);
 
-      chipWeek.textContent = "Week (" + formatShort(weekStart) + " - " + weekEnd + ")";
+      chipWeek.textContent = "Last 7 days (" + formatShort(weekStart) + " - " + weekEnd + ")";
 
       const monthEnd = formatShort(now);
       const monthStart = new Date(now);
       monthStart.setDate(monthStart.getDate() - 29);
 
-      chipMonth.textContent = "Month (" + formatShort(monthStart) + " - " + monthEnd + ")";
+      chipMonth.textContent = "Last 30 days (" + formatShort(monthStart) + " - " + monthEnd + ")";
     }
 
     updateChipLabels();
@@ -228,12 +415,14 @@
       const today = abuDhabiNow();
       today.setHours(0, 0, 0, 0);
 
-      if (range === "today") return [formatDate(today)];
+      if (range === "today") {
+        return [new Date(today)];
+      }
 
       if (range === "yesterday") {
         const y = new Date(today);
         y.setDate(y.getDate() - 1);
-        return [formatDate(y)];
+        return [y];
       }
 
       if (range === "week") {
@@ -241,7 +430,7 @@
         for (let i = 0; i < 7; i++) {
           const d = new Date(today);
           d.setDate(d.getDate() - i);
-          dates.push(formatDate(d));
+          dates.push(d);
         }
         return dates;
       }
@@ -251,12 +440,12 @@
         for (let i = 0; i < 30; i++) {
           const d = new Date(today);
           d.setDate(d.getDate() - i);
-          dates.push(formatDate(d));
+          dates.push(d);
         }
         return dates;
       }
 
-      return [formatDate(today)];
+      return [new Date(today)];
     }
 
     function labelForRange(range) {
@@ -267,30 +456,24 @@
       return "Today";
     }
 
-    async function fetchCountForDate(str) {
-      const res = await fetch("/email-count?date=" + str);
-      const data = await res.json();
-      return data.count || 0;
+    function detailForRange(dates) {
+      if (!dates.length) return "";
+      const sorted = [...dates].sort((a, b) => a - b);
+      const start = sorted[0];
+      const end = sorted[sorted.length - 1];
+      if (start.toDateString() === end.toDateString()) {
+        return formatShortWithYear(start);
+      }
+      return formatShortWithYear(start) + " to " + formatShortWithYear(end);
     }
 
-    async function loadRange(range) {
-      try {
-        setStatus("Loading data, please wait.", "loading");
-        rangeLabelEl.textContent = labelForRange(range);
-        setActiveChip(range);
-
-        const dates = getDatesForRange(range);
-        let total = 0;
-
-        for (const d of dates) {
-          total += await fetchCountForDate(d);
-        }
-
-        countValueEl.textContent = total;
-        setStatus("Updated just now", "normal");
-      } catch (err) {
-        setStatus("Error: " + err.message, "error");
+    async function fetchCountForDate(str) {
+      const res = await fetch("/email-count?date=" + encodeURIComponent(str));
+      if (!res.ok) {
+        throw new Error("API " + res.status);
       }
+      const data = await res.json();
+      return data.count || 0;
     }
 
     function setActiveChip(range) {
@@ -302,7 +485,59 @@
 
     function setStatus(text, type) {
       statusTextEl.textContent = text;
-      statusTextEl.className = "status " + type;
+      statusTextEl.className = "status" + (type ? " " + type : "");
+    }
+
+    function renderBreakdown(rows) {
+      breakdownListEl.innerHTML = "";
+      if (!rows.length) {
+        const emptyRow = document.createElement("div");
+        emptyRow.className = "breakdown-row";
+        emptyRow.innerHTML = '<span class="breakdown-date">No data</span><span class="breakdown-count">0</span>';
+        breakdownListEl.appendChild(emptyRow);
+        return;
+      }
+      rows.forEach((row) => {
+        const div = document.createElement("div");
+        div.className = "breakdown-row";
+        div.innerHTML =
+          '<span class="breakdown-date">' + row.label + '</span>' +
+          '<span class="breakdown-count">' + row.count + "</span>";
+        breakdownListEl.appendChild(div);
+      });
+    }
+
+    async function loadRange(range) {
+      try {
+        setStatus("Loading data, please wait.", "loading");
+        setActiveChip(range);
+        rangeLabelEl.textContent = labelForRange(range);
+
+        const dateObjs = getDatesForRange(range);
+        rangeDetailEl.textContent = detailForRange(dateObjs);
+
+        // fetch all dates in parallel
+        const promises = dateObjs.map((d) => fetchCountForDate(formatDate(d)));
+        const counts = await Promise.all(promises);
+
+        const total = counts.reduce((sum, v) => sum + v, 0);
+        countValueEl.textContent = total.toString();
+
+        const rows = dateObjs
+          .map((d, idx) => ({
+            label: formatShortWithYear(d),
+            count: counts[idx]
+          }))
+          .sort((a, b) => new Date(a.label) - new Date(b.label));
+
+        renderBreakdown(rows);
+
+        setStatus("Updated just now.", "normal");
+      } catch (err) {
+        console.error(err);
+        setStatus("Error, " + err.message, "error");
+        renderBreakdown([]);
+      }
     }
 
     chipsContainer.addEventListener("click", (e) => {
