@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const { MongoClient, ObjectId } = require("mongodb");
 const { simpleParser } = require("mailparser");
 
@@ -9,7 +10,8 @@ const MONGO_URI = process.env.MONGO_URL || "mongodb://mongo:27017";
 const DB_NAME = process.env.MONGO_DB || "tempmail";
 const COLLECTION = process.env.MONGO_COLLECTION || "emails";
 
-app.use(express.static("public"));
+const staticDir = path.join(__dirname, "public");
+app.use(express.static(staticDir, { extensions: ["html"] }));
 
 let collection;
 
