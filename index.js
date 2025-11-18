@@ -19,6 +19,9 @@ async function initMongo() {
   console.log("API connected to Mongo", mongoUrl, dbName, collName);
 }
 
+
+app.use(express.static("public"));
+
 // health check
 app.get("/health", (req, res) => {
   res.json({ ok: true, helo: "tempmail-mongo-api" });
