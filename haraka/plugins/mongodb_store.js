@@ -16,7 +16,18 @@ exports.register = function () {
     .then((client) => {
       const db = client.db(dbName);
       collection = db.collection(collName);
+
       plugin.loginfo(`Mongo connected to ${url}, db ${dbName}, collection ${collName}`);
+
+      // ===========================
+      // TTL INDEX FOR TESTING: 1 MIN
+      // ===========================
+      collection.createIndex(
+        { receivedAt: 1 },
+        { expireAfterSeconds: 60 }   // 1 minute only
+      )
+      .then(() => plugin.loginfo("TTL index created for receivedAt (1 minute)."))
+      .catch((err) => plugin.logerror("TTL index error: " + err.message));
     })
     .catch((err) => {
       plugin.logerror("Mongo connection error: " + err.message);
@@ -25,7 +36,6 @@ exports.register = function () {
   plugin.loginfo("Registering hook: data_post");
   this.register_hook("data_post", "save_to_mongo");
 
-  // new, always mark queue as OK, so SMTP client gets 250
   plugin.loginfo("Registering hook: queue");
   this.register_hook("queue", "mark_queued_ok");
 };
@@ -72,7 +82,7 @@ exports.save_to_mongo = function (next, connection) {
         subject,
         headers: txn.header ? txn.header.headers_decoded : {},
         body,
-        receivedAt: new Date(),
+        receivedAt: new Date(),  // REQUIRED for TTL
         debug_uuid: txn.uuid,
         debug_get_data_call: getDataCount
       };
@@ -83,11 +93,11 @@ exports.save_to_mongo = function (next, connection) {
         .insertOne(doc)
         .then(() => {
           plugin.loginfo("Inserted email for " + rcpt_to + " with UUID " + txn.uuid);
-          next(); // continue to queue hook
+          next();
         })
         .catch((e) => {
           plugin.logerror("Mongo insert error: " + e.message);
-          next(); // still continue, or you can next(constants.denysoft) if you want retry on DB error
+          next();
         });
 
     } catch (e) {
@@ -97,7 +107,6 @@ exports.save_to_mongo = function (next, connection) {
   });
 };
 
-// this is called on the 'queue' hook, after data_post
 exports.mark_queued_ok = function (next, connection) {
   const plugin = this;
   plugin.loginfo("QUEUE hook, marking message as accepted");
