@@ -15,28 +15,6 @@ app.use(express.static(staticDir, { extensions: ["html"] }));
 
 let collection;
 
-// helper to parse YYYY-MM-DD into UTC start and end of that day
-function getUtcDayRange(dateStr) {
-  const parts = dateStr.split("-");
-  if (parts.length !== 3) {
-    throw new Error("Invalid date format, use YYYY-MM-DD");
-  }
-
-  const [year, month, day] = parts.map(Number);
-  if (!year || !month || !day) {
-    throw new Error("Invalid date value");
-  }
-
-  const start = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
-  const end = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
-
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    throw new Error("Invalid date");
-  }
-
-  return { start, end };
-}
-
 // connect to Mongo and start server
 async function start() {
   try {
@@ -157,34 +135,72 @@ app.get("/message/:id", async (req, res) => {
   }
 });
 
-// simple email count by date
+// simple email count by date plus top sender
 // GET /email-count?date=2025-11-17
 app.get("/email-count", async (req, res) => {
   try {
-    const dateStr = req.query.date; // "2025-11-18"
+    const dateStr = req.query.date;
     if (!dateStr) {
       return res.status(400).json({ ok: false, error: "date is required" });
     }
 
     const [year, month, day] = dateStr.split("-").map(Number);
+    if (!year || !month || !day) {
+      return res.status(400).json({ ok: false, error: "invalid date" });
+    }
 
-    // Local Abu Dhabi day 2025 11 18 00:00
+    // Abu Dhabi local day
     const localStartMs = Date.UTC(year, month - 1, day, 0, 0, 0);
     const oneDayMs = 24 * 60 * 60 * 1000;
     const offsetMs = 4 * 60 * 60 * 1000; // UTC+4
 
-    // Convert Abu Dhabi local start and end to UTC
+    // convert Abu Dhabi local start and end to UTC
     const startUtc = new Date(localStartMs - offsetMs);
     const endUtc = new Date(localStartMs + oneDayMs - offsetMs);
 
-    const count = await collection.countDocuments({
-      receivedAt: {
-        $gte: startUtc,
-        $lt: endUtc
-      }
+    // total count
+    const countPromise = collection.countDocuments({
+      receivedAt: { $gte: startUtc, $lt: endUtc }
     });
 
-    res.json({ ok: true, date: dateStr, count });
+    // most repeated source email in that range
+    const topSenderPromise = collection
+      .aggregate([
+        {
+          $match: {
+            receivedAt: { $gte: startUtc, $lt: endUtc }
+          }
+        },
+        {
+          $group: {
+            _id: "$mail_from",
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { count: -1 } },
+        { $limit: 1 }
+      ])
+      .toArray();
+
+    const [count, topSenderAgg] = await Promise.all([
+      countPromise,
+      topSenderPromise
+    ]);
+
+    let topSender = null;
+    if (topSenderAgg.length > 0 && topSenderAgg[0]._id) {
+      topSender = {
+        email: topSenderAgg[0]._id,
+        count: topSenderAgg[0].count
+      };
+    }
+
+    res.json({
+      ok: true,
+      date: dateStr,
+      count,
+      top_sender: topSender
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false, error: "server error" });
