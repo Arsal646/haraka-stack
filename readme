@@ -17,9 +17,23 @@ http://51.79.254.189/dashboard
 
 Saved email helper API (JSON):
 
-- `POST /save-email` – body `{ "email": "user@example.com" }`, returns `access_token`, `access_url`, `expires_at`, and `expires_at_formatted`.
-- `GET /saved/:token` – fetches the saved email; returns 404 if not found, 410 if expired, otherwise the original email plus expiry info and `days_remaining`.
-- `POST /check-saved` – body `{ "email": "user@example.com" }`; responds with `{ is_saved: boolean, data: access info or null }`.
+- `POST /save-email` - body `{ "email": "user@example.com" }`, returns `access_token`, `access_url`, `expires_at`, and `expires_at_formatted`.
+- `GET /saved/:token` - fetches the saved email; returns 404 if not found, 410 if expired, otherwise the original email plus expiry info and `days_remaining`.
+- `POST /check-saved` - body `{ "email": "user@example.com" }`; responds with `{ is_saved: boolean, data: access info or null }`.
+
+HTTPS setup
+
+- The nginx proxy now listens on both 80 and 443 and requires TLS assets in `nginx/ssl/`.
+- Supply your own cert/key named `server.crt` and `server.key` (Lets Encrypt, Cloudflare, etc.) or generate a temporary self-signed pair for testing:
+
+  ```bash
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout nginx/ssl/server.key \
+    -out nginx/ssl/server.crt \
+    -subj "/CN=51.79.254.189"
+  ```
+
+- After placing the certs, rebuild the stack (`sudo docker-compose down && sudo docker-compose up -d --build`). HTTPS will now terminate at nginx so secure frontends can fetch via `https://51.79.254.189/api/...`.
 
 git pull
 sudo docker-compose down
