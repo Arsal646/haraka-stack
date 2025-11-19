@@ -14,6 +14,13 @@ You can also open the lightweight analytics dashboard to see today/week/month co
 
 http://51.79.254.189/dashboard
 
+
+Saved email helper API (JSON):
+
+- `POST /save-email` – body `{ "email": "user@example.com" }`, returns `access_token`, `access_url`, `expires_at`, and `expires_at_formatted`.
+- `GET /saved/:token` – fetches the saved email; returns 404 if not found, 410 if expired, otherwise the original email plus expiry info and `days_remaining`.
+- `POST /check-saved` – body `{ "email": "user@example.com" }`; responds with `{ is_saved: boolean, data: access info or null }`.
+
 git pull
 sudo docker-compose down
 sudo docker-compose up -d --build
