@@ -98,6 +98,24 @@ app.get("/api/fakeemails", async (req, res) => {
   }
 });
 
+app.get("/fakeemails", async (req, res) => {
+  const { email } = req.query;
+
+  if (!email) {
+    return res
+      .status(400)
+      .json({ ok: false, error: "The email query parameter is required" });
+  }
+
+  try {
+    const parsedDocs = await fetchInbox(email);
+    res.json(parsedDocs);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 // single message with parsed body
 app.get("/message/:id", async (req, res) => {
   try {
