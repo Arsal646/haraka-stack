@@ -28,48 +28,69 @@ app.get("/health", (req, res) => {
 });
 
 // inbox list with parsed text and html
-app.get("/inbox/:address", async (req, res) => {
-  try {
-    const address = req.params.address.toLowerCase();
+async function fetchInbox(address) {
+  const normalized = address.toLowerCase();
 
-    const docs = await collection
-      .find({ rcpt_to: address })
-      .sort({ receivedAt: -1 })
-      .limit(50)
-      .toArray();
+  const docs = await collection
+    .find({ rcpt_to: normalized })
+    .sort({ receivedAt: -1 })
+    .limit(50)
+    .toArray();
 
-    const parsedDocs = [];
+  const parsedDocs = [];
 
-    for (const doc of docs) {
-      let textBody = null;
-      let htmlBody = null;
+  for (const doc of docs) {
+    let textBody = null;
+    let htmlBody = null;
 
-      try {
-        if (doc.body) {
-          const parsed = await simpleParser(doc.body);
-          textBody = parsed.text || null;
-          htmlBody = parsed.html || null;
-        }
-      } catch (err) {
-        console.error("Parse error:", err.message);
+    try {
+      if (doc.body) {
+        const parsed = await simpleParser(doc.body);
+        textBody = parsed.text || null;
+        htmlBody = parsed.html || null;
       }
-
-      parsedDocs.push({
-        id: doc._id.toString(),
-        from_email: doc.mail_from,
-        to_email: Array.isArray(doc.rcpt_to)
-          ? doc.rcpt_to[0]
-          : doc.rcpt_to,
-        subject: doc.subject,
-        body_text: textBody,
-        body_html: htmlBody,
-        bucket: null,
-        object_key: null,
-        created_at: doc.receivedAt,
-        updated_at: doc.receivedAt
-      });
+    } catch (err) {
+      console.error("Parse error:", err.message);
     }
 
+    parsedDocs.push({
+      id: doc._id.toString(),
+      from_email: doc.mail_from,
+      to_email: Array.isArray(doc.rcpt_to) ? doc.rcpt_to[0] : doc.rcpt_to,
+      subject: doc.subject,
+      body_text: textBody,
+      body_html: htmlBody,
+      bucket: null,
+      object_key: null,
+      created_at: doc.receivedAt,
+      updated_at: doc.receivedAt
+    });
+  }
+
+  return parsedDocs;
+}
+
+app.get("/inbox/:address", async (req, res) => {
+  try {
+    const parsedDocs = await fetchInbox(req.params.address);
+    res.json(parsedDocs);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+app.get("/api/fakeemails", async (req, res) => {
+  const { email } = req.query;
+
+  if (!email) {
+    return res
+      .status(400)
+      .json({ ok: false, error: "The email query parameter is required" });
+  }
+
+  try {
+    const parsedDocs = await fetchInbox(email);
     res.json(parsedDocs);
   } catch (e) {
     console.error(e);
