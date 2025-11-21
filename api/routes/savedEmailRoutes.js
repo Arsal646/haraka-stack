@@ -44,7 +44,7 @@ function buildAccessPayload(doc, baseUrl) {
   const formatted = formatExpiryPayload(expiresAt);
   return {
     access_token: doc.token,
-    access_url: `${baseUrl}/saved/${doc.token}`,
+    access_url: `${baseUrl}/saved/${doc.token}?ref=api`,
     ...formatted
   };
 }
