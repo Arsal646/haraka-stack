@@ -7,10 +7,10 @@ function isValidEmail(value) {
   return EMAIL_REGEX.test(value);
 }
 
-function getBaseUrl(req) {
-  const proto = req.get("x-forwarded-proto") || req.protocol;
-  const host = req.get("host");
-  return `${proto}://${host}`;
+const BASE_URL = "https://tempmail4u.com";
+
+function getBaseUrl() {
+  return BASE_URL;
 }
 
 function toDate(value) {
