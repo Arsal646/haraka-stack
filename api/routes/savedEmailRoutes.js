@@ -50,7 +50,7 @@ function buildAccessPayload(doc, baseUrl) {
 }
 
 module.exports = function registerSavedEmailRoutes(app, savedCollection) {
-  app.post("api/save-email", async (req, res) => {
+  app.post(["/api/save-email", "/api/save-email"], async (req, res) => {
     const emailRaw = typeof req.body?.email === "string" ? req.body.email.trim() : "";
     const email = emailRaw.toLowerCase();
 
@@ -104,7 +104,7 @@ module.exports = function registerSavedEmailRoutes(app, savedCollection) {
     }
   });
 
-  app.get("api/saved/:token", async (req, res) => {
+  app.get(["/api/saved/:token", "/api/saved/:token"], async (req, res) => {
     const { token } = req.params;
     const now = new Date();
 
@@ -151,7 +151,7 @@ module.exports = function registerSavedEmailRoutes(app, savedCollection) {
     }
   });
 
-  app.post("api/check-saved", async (req, res) => {
+  app.post(["/api/check-saved", "/api/check-saved"], async (req, res) => {
     const emailRaw = typeof req.body?.email === "string" ? req.body.email.trim() : "";
     const email = emailRaw.toLowerCase();
 
