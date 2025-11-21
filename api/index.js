@@ -158,7 +158,7 @@ app.get("/api/fakeemails", async (req, res) => {
   }
 });
 
-app.post("/save-email", async (req, res) => {
+app.post("/api/save-email", async (req, res) => {
   const emailRaw = typeof req.body?.email === "string" ? req.body.email.trim() : "";
   const email = emailRaw.toLowerCase();
 
@@ -203,7 +203,7 @@ app.post("/save-email", async (req, res) => {
   }
 });
 
-app.get("/saved/:token", async (req, res) => {
+app.get("api//saved/:token", async (req, res) => {
   const { token } = req.params;
   const now = new Date();
 
@@ -244,7 +244,7 @@ app.get("/saved/:token", async (req, res) => {
   }
 });
 
-app.post("/check-saved", async (req, res) => {
+app.post("/api/check-saved", async (req, res) => {
   const emailRaw = typeof req.body?.email === "string" ? req.body.email.trim() : "";
   const email = emailRaw.toLowerCase();
 
